@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A concise research page explaining Playwright end-to-end architecture, browser communication flow, auto-waiting, browser contexts, and debugging." />
+  <title>Playwright Architecture | Research Task</title>
+  <style>
+    :root{
+      --bg:#08111f;
+      --panel:#0e1b2e;
+      --panel-2:#12243b;
+      --text:#edf7ff;
+      --muted:#a8bbcc;
+      --green:#42d392;
+      --green-2:#20b77a;
+      --blue:#65a9ff;
+      --line:#24415f;
+      --danger:#ff8d8d;
+      --shadow:0 16px 40px rgba(0,0,0,.24);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% -10%, rgba(66,211,146,.14), transparent 26rem),
+        radial-gradient(circle at 90% 10%, rgba(101,169,255,.11), transparent 28rem),
+        var(--bg);
+      color:var(--text);
+      line-height:1.6;
+    }
+    a{color:#8bc1ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{width:min(1120px,92%);margin:auto}
+    .nav{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(8,17,31,.78);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:18px}
+    .brand{font-weight:800;letter-spacing:.2px}
+    .brand span{color:var(--green)}
+    .nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:.92rem}
+    .hero{padding:86px 0 48px}
+    .eyebrow{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:7px 12px;border-radius:999px;
+      border:1px solid rgba(66,211,146,.28);
+      background:rgba(66,211,146,.08);
+      color:#bdf5db;font-size:.86rem;font-weight:700
+    }
+    h1{font-size:clamp(2.5rem,6vw,5rem);line-height:1.02;margin:18px 0 20px;letter-spacing:-.045em}
+    .accent{color:var(--green)}
+    .lead{max-width:820px;color:var(--muted);font-size:1.15rem;margin:0}
+    .meta{margin-top:22px;color:#c7d4e1;font-size:.95rem}
+    .hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:24px;align-items:stretch;margin-top:34px}
+    .card{
+      background:linear-gradient(180deg, rgba(18,36,59,.93), rgba(14,27,46,.93));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:var(--radius);box-shadow:var(--shadow)
+    }
+    .summary{padding:26px}
+    .summary strong{color:#fff}
+    .quick{padding:26px}
+    .quick .big{font-size:2.5rem;font-weight:900;color:var(--green);line-height:1}
+    .quick p{color:var(--muted);margin-bottom:0}
+    section{padding:52px 0}
+    .section-title{font-size:clamp(1.7rem,3vw,2.6rem);margin:0 0 10px;letter-spacing:-.03em}
+    .section-sub{color:var(--muted);margin:0 0 26px;max-width:780px}
+    .flow{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      align-items:center;gap:10px;
+      padding:24px;
+      overflow-x:auto
+    }
+    .node{
+      min-width:145px;
+      padding:18px 14px;
+      text-align:center;
+      background:#0b1829;
+      border:1px solid var(--line);
+      border-radius:16px;
+      transition:.25s ease;
+      position:relative
+    }
+    .node.active{
+      border-color:var(--green);
+      transform:translateY(-4px);
+      box-shadow:0 0 0 3px rgba(66,211,146,.10), 0 12px 32px rgba(66,211,146,.14)
+    }
+    .node .icon{font-size:1.55rem;display:block;margin-bottom:6px}
+    .node b{display:block;font-size:.98rem}
+    .node small{display:block;color:var(--muted);font-size:.76rem;margin-top:5px}
+    .arrow{font-size:1.35rem;color:var(--green);text-align:center;min-width:26px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    button{
+      border:1px solid rgba(255,255,255,.12);
+      background:#132740;color:#fff;padding:10px 15px;
+      border-radius:12px;font-weight:750;cursor:pointer
+    }
+    button.primary{background:var(--green);color:#052016;border-color:transparent}
+    button:hover{filter:brightness(1.06)}
+    .status{color:var(--muted);margin-top:12px;min-height:1.5em}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .info{padding:22px}
+    .info h3{margin:4px 0 8px}
+    .info p{color:var(--muted);margin:0}
+    .pill{display:inline-block;font-size:.74rem;padding:5px 9px;border-radius:999px;background:rgba(101,169,255,.1);color:#acd2ff;border:1px solid rgba(101,169,255,.2)}
+    .stack{display:grid;gap:12px}
+    .layer{
+      padding:16px 18px;border-radius:15px;background:#0b1829;border:1px solid var(--line);
+      display:flex;justify-content:space-between;gap:18px;align-items:center
+    }
+    .layer span{color:var(--muted);font-size:.9rem;text-align:right}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .feature{padding:22px}
+    .feature h3{margin-top:0}
+    .feature ul{padding-left:20px;color:var(--muted);margin-bottom:0}
+    .code{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      background:#07101d;border:1px solid var(--line);border-radius:16px;
+      padding:20px;overflow:auto;color:#d9f9e9
+    }
+    .takeaway{
+      padding:30px;
+      border:1px solid rgba(66,211,146,.24);
+      background:linear-gradient(135deg, rgba(66,211,146,.12), rgba(101,169,255,.07));
+    }
+    .takeaway h3{font-size:1.5rem;margin-top:0}
+    .refs{padding:24px}
+    .refs li{margin:8px 0;color:var(--muted)}
+    footer{padding:30px 0 46px;color:var(--muted);font-size:.9rem;text-align:center}
+    .note{
+      border-left:4px solid var(--green);padding:14px 18px;background:rgba(66,211,146,.07);
+      border-radius:0 12px 12px 0;color:#cfe7db
+    }
+    @media (max-width:900px){
+      .hero-grid,.grid-3,.two{grid-template-columns:1fr}
+      .flow{grid-template-columns:1fr;overflow:visible}
+      .arrow{transform:rotate(90deg)}
+      .nav-links{display:none}
+      .layer{align-items:flex-start;flex-direction:column}
+      .layer span{text-align:left}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="brand">Playwright <span>Architecture</span></div>
+      <div class="nav-links">
+        <a href="#flow">Flow</a>
+        <a href="#layers">Layers</a>
+        <a href="#features">Why it matters</a>
+        <a href="#takeaway">My takeaway</a>
+        <a href="#references">References</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="container">
+        <div class="eyebrow">Research Task · End-to-End Architecture</div>
+        <h1>How a <span class="accent">Playwright test</span><br/>reaches the browser</h1>
+        <p class="lead">
+          A practical explanation of the path from a test file to the Playwright client, driver,
+          browser-specific automation layer, browser process, renderer and DOM — plus where
+          auto-waiting, contexts, events and tracing fit in.
+        </p>
+        <div class="meta">Prepared by <strong>Grandhi</strong> · 11 September 2026</div>
+
+        <div class="hero-grid">
+          <div class="card summary">
+            <span class="pill">In one sentence</span>
+            <p>
+              A Playwright API call is represented by the client SDK, carried through a persistent
+              communication channel to the Playwright driver, translated into browser-engine-specific
+              commands, executed by the browser, and returned with responses and events.
+            </p>
+          </div>
+          <div class="card quick">
+            <div class="big">3</div>
+            <p><strong>browser engines</strong><br/>Chromium · Firefox · WebKit</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="flow">
+      <div class="container">
+        <h2 class="section-title">The architecture flow</h2>
+        <p class="section-sub">
+          Click “Play flow” to follow a simplified command such as <code>page.getByRole(...).click()</code>.
+        </p>
+
+        <div class="card">
+          <div class="flow" id="flowDiagram">
+            <div class="node" data-step="0"><span class="icon">🧪</span><b>Test Script</b><small>Playwright Test / user code</small></div>
+            <div class="arrow">→</div>
+            <div class="node" data-step="1"><span class="icon">🧩</span><b>Client SDK</b><small>API objects & proxies</small></div>
+            <div class="arrow">→</div>
+            <div class="node" data-step="2"><span class="icon">🔁</span><b>Persistent Channel</b><small>Pipe / stdio / WebSocket*</small></div>
+            <div class="arrow">→</div>
+            <div class="node" data-step="3"><span class="icon">⚙️</span><b>Driver</b><small>Node.js server-side logic</small></div>
+            <div class="arrow">→</div>
+            <div class="node" data-step="4"><span class="icon">📡</span><b>Browser Protocol</b><small>Engine-specific automation</small></div>
+            <div class="arrow">→</div>
+            <div class="node" data-step="5"><span class="icon">🌐</span><b>Browser</b><small>Chromium / Firefox / WebKit</small></div>
+            <div class="arrow">→</div>
+            <div class="node" data-step="6"><span class="icon">🧱</span><b>Renderer + DOM</b><small>Page JS, layout, input</small></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="primary" onclick="playFlow()">▶ Play flow</button>
+          <button onclick="resetFlow()">Reset</button>
+        </div>
+        <div id="status" class="status">Ready.</div>
+        <p class="note">
+          *The exact transport depends on how Playwright is used. JavaScript/TypeScript can use an
+          in-process pipe; other language bindings communicate with the bundled driver process; remote
+          connections can use WebSocket. So “Playwright always uses WebSocket” is an oversimplification.
+        </p>
+      </div>
+    </section>
+
+    <section id="layers">
+      <div class="container">
+        <h2 class="section-title">What each layer does</h2>
+        <p class="section-sub">This is the same flow, broken into responsibilities.</p>
+
+        <div class="stack">
+          <div class="layer"><strong>1. Test runner & worker</strong><span>Discovers tests, loads configuration, executes test functions and manages parallel workers.</span></div>
+          <div class="layer"><strong>2. Client SDK</strong><span>Exposes objects such as browser, context, page and locator and turns API calls into protocol messages.</span></div>
+          <div class="layer"><strong>3. Persistent communication channel</strong><span>Carries commands toward the driver and responses/events back to the client.</span></div>
+          <div class="layer"><strong>4. Playwright driver</strong><span>Owns the main automation logic: actionability checks, selectors, routing, tracing and browser orchestration.</span></div>
+          <div class="layer"><strong>5. Browser-specific protocol</strong><span>Normalizes different browser engines behind one Playwright API. Chromium uses CDP; Firefox and WebKit use Playwright-supported engine-specific integrations.</span></div>
+          <div class="layer"><strong>6. Browser + renderer</strong><span>The browser routes navigation/input; the renderer owns the page DOM, JavaScript execution, layout and hit testing.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 class="section-title">A command in motion</h2>
+        <p class="section-sub">Example: clicking a button through a locator.</p>
+        <div class="code"><pre><code>await page.getByRole('button', { name: 'Place order' }).click();</code></pre></div>
+        <div class="grid-3" style="margin-top:18px">
+          <div class="card info">
+            <span class="pill">1 · Describe</span>
+            <h3>Locator stores intent</h3>
+            <p>The locator describes what should be found. The element is resolved against the live page when the action runs.</p>
+          </div>
+          <div class="card info">
+            <span class="pill">2 · Wait safely</span>
+            <h3>Actionability checks</h3>
+            <p>Before clicking, Playwright checks conditions such as visibility, stability, ability to receive events and enabled state.</p>
+          </div>
+          <div class="card info">
+            <span class="pill">3 · Execute</span>
+            <h3>Browser performs input</h3>
+            <p>The driver sends the engine-level command, the browser routes it to the page, and resulting responses/events flow back.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <h2 class="section-title">Why the architecture matters to a tester</h2>
+        <p class="section-sub">The design explains several Playwright features we use every day.</p>
+
+        <div class="two">
+          <div class="card feature">
+            <h3>Auto-waiting</h3>
+            <ul>
+              <li>Playwright performs actionability checks before many actions.</li>
+              <li>This reduces the need for hard-coded sleeps.</li>
+              <li>Timeout errors become more meaningful because they often point to a failed actionability condition.</li>
+            </ul>
+          </div>
+          <div class="card feature">
+            <h3>BrowserContext isolation</h3>
+            <ul>
+              <li>Each context is an independent browser session.</li>
+              <li>Cookies, local storage and session storage are isolated.</li>
+              <li>Contexts are fast to create and support parallel test design.</li>
+            </ul>
+          </div>
+          <div class="card feature">
+            <h3>Event-driven behavior</h3>
+            <ul>
+              <li>Responses and browser events can travel back over the same persistent communication path.</li>
+              <li>This supports waiting for navigation, popups, downloads, requests and other browser events.</li>
+            </ul>
+          </div>
+          <div class="card feature">
+            <h3>Tracing & debugging</h3>
+            <ul>
+              <li>Tracing can capture browser operations and network activity.</li>
+              <li>Playwright Test tracing adds richer test-level information for debugging failures.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 class="section-title">Browser engine mapping</h2>
+        <p class="section-sub">One API, multiple browser engines.</p>
+        <div class="grid-3">
+          <div class="card info">
+            <span class="pill">Chromium</span>
+            <h3>Chrome DevTools Protocol</h3>
+            <p>Playwright uses Chromium's automation/debugging capabilities, including CDP-based control.</p>
+          </div>
+          <div class="card info">
+            <span class="pill">Firefox</span>
+            <h3>Playwright-supported Firefox integration</h3>
+            <p>Playwright ships a compatible Firefox build and communicates through its browser-specific automation layer.</p>
+          </div>
+          <div class="card info">
+            <span class="pill">WebKit</span>
+            <h3>WebKit-specific integration</h3>
+            <p>Playwright ships a compatible WebKit build so the same Playwright API can drive WebKit behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="takeaway">
+      <div class="container">
+        <div class="card takeaway">
+          <h3>What I understood from this research</h3>
+          <p>
+            Before studying the architecture, I mainly saw Playwright as a browser automation library.
+            Now I understand that a simple test action passes through multiple layers: the test runner and
+            client SDK, a persistent communication channel, the Playwright driver, a browser-specific
+            automation layer and finally the browser renderer/DOM.
+          </p>
+          <p>
+            The most useful insight for me is that features such as <strong>auto-waiting, browser event
+            handling, isolated BrowserContexts and tracing</strong> are not just convenience methods —
+            they are connected to how Playwright is designed internally.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="references">
+      <div class="container">
+        <h2 class="section-title">References</h2>
+        <p class="section-sub">Sources used to understand and verify the concepts on this page.</p>
+        <div class="card refs">
+          <ol>
+            <li><a href="https://app.thetestingacademy.com/playwright/playwright-e2e-architecture-blueprint" target="_blank" rel="noopener">The Testing Academy — Playwright End-to-End Architecture Blueprint</a></li>
+            <li><a href="https://playwright.dev/docs/actionability" target="_blank" rel="noopener">Playwright Docs — Auto-waiting / Actionability</a></li>
+            <li><a href="https://playwright.dev/docs/browser-contexts" target="_blank" rel="noopener">Playwright Docs — Browser Contexts / Isolation</a></li>
+            <li><a href="https://playwright.dev/docs/api/class-browser" target="_blank" rel="noopener">Playwright Docs — Browser API</a></li>
+            <li><a href="https://playwright.dev/docs/api/class-tracing" target="_blank" rel="noopener">Playwright Docs — Tracing</a></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">Research & learning page · Playwright Architecture · Built as a standalone HTML page for GitHub Pages.</div>
+  </footer>
+
+  <script>
+    const steps = [
+      "The test script calls the Playwright API.",
+      "The client SDK represents the action and prepares the protocol message.",
+      "The message travels through the persistent communication channel.",
+      "The Playwright driver applies automation logic and translates the action.",
+      "The browser-specific automation layer sends engine-level commands.",
+      "The browser process receives the command and routes it to the correct page.",
+      "The renderer/DOM executes the page-level effect; responses and events travel back."
+    ];
+
+    let flowTimer = null;
+
+    function resetFlow() {
+      if (flowTimer) clearInterval(flowTimer);
+      document.querySelectorAll(".node").forEach(n => n.classList.remove("active"));
+      document.getElementById("status").textContent = "Ready.";
+    }
+
+    function playFlow() {
+      resetFlow();
+      let i = 0;
+      const nodes = [...document.querySelectorAll(".node")];
+      const status = document.getElementById("status");
+
+      const show = () => {
+        nodes.forEach(n => n.classList.remove("active"));
+        nodes[i].classList.add("active");
+        status.textContent = `Step ${i + 1}/${nodes.length}: ${steps[i]}`;
+        i++;
+        if (i >= nodes.length) {
+          clearInterval(flowTimer);
+          flowTimer = setTimeout(() => {
+            status.textContent = "Flow complete — the result and browser events return through the communication path.";
+          }, 900);
+        }
+      };
+
+      show();
+      flowTimer = setInterval(show, 1300);
+    }
+  </script>
+</body>
+</html>
