@@ -1,39 +1,39 @@
-# Playwright Architecture Research
+# Playwright Architecture
 
-A standalone HTML page created for the **Playwright Architecture research task**.
+A standalone HTML page created to explain my understanding of **Playwright Architecture** in a simple and visual way.
 
-## What the page covers
+## Topics covered
 
 - End-to-end Playwright architecture flow
-- Test runner and client SDK
+- Test script and client library
 - Persistent communication channel
 - Playwright driver/server role
 - Browser-specific automation layer
 - Chromium, Firefox and WebKit
 - Auto-waiting and actionability
 - BrowserContext isolation
-- Event-driven behavior
+- Event-driven communication
 - Tracing and debugging
-- Personal learning takeaway
-- Reference links
+- My final understanding of the architecture
 
 ## Run locally
 
-Open `index.html` directly in a browser.
+Open `index.html` directly in any browser.
 
 ## Publish using GitHub Pages
 
 1. Create a new GitHub repository.
-2. Upload `index.html` and this `README.md`.
+2. Upload `index.html` and `README.md`.
 3. Open **Settings → Pages**.
 4. Under **Build and deployment**, choose **Deploy from a branch**.
-5. Select the `main` branch and `/ (root)`, then save.
-6. GitHub will generate a public Pages URL.
+5. Select the `main` branch and `/ (root)`.
+6. Save and wait for the live GitHub Pages URL.
 
 ## Suggested task comment
 
-Completed the Playwright Architecture research task.  
-I created an HTML page explaining the architecture, browser communication flow, auto-waiting, isolation and key internal layers.
+Completed the Playwright Architecture task.
+
+I created a simple HTML page explaining how Playwright communicates with the browser, the role of the client library and driver, browser-specific communication, auto-waiting, BrowserContext isolation and event handling.
 
 Live page: `<your-github-pages-url>`  
 Repository: `<your-github-repository-url>`

@@ -158,7 +158,7 @@
         <a href="#layers">Layers</a>
         <a href="#features">Why it matters</a>
         <a href="#takeaway">My takeaway</a>
-        <a href="#references">References</a>
+        
       </div>
     </div>
   </nav>
@@ -166,18 +166,16 @@
   <main>
     <header class="hero">
       <div class="container">
-        <div class="eyebrow">Research Task · End-to-End Architecture</div>
+        <div class="eyebrow">Playwright Architecture · Learning Notes</div>
         <h1>How a <span class="accent">Playwright test</span><br/>reaches the browser</h1>
         <p class="lead">
-          A practical explanation of the path from a test file to the Playwright client, driver,
-          browser-specific automation layer, browser process, renderer and DOM — plus where
-          auto-waiting, contexts, events and tracing fit in.
+          My understanding of how a Playwright test moves from automation code to the browser, how the main layers work together, and why features such as auto-waiting, browser contexts and event handling feel different in day-to-day test automation.
         </p>
-        <div class="meta">Prepared by <strong>Grandhi</strong> · 11 September 2026</div>
+        <div class="meta">Prepared by <strong>Grandhi</strong></div>
 
         <div class="hero-grid">
           <div class="card summary">
-            <span class="pill">In one sentence</span>
+            <span class="pill">My understanding</span>
             <p>
               A Playwright API call is represented by the client SDK, carried through a persistent
               communication channel to the Playwright driver, translated into browser-engine-specific
@@ -338,9 +336,9 @@
     <section id="takeaway">
       <div class="container">
         <div class="card takeaway">
-          <h3>What I understood from this research</h3>
+          <h3>What I understood</h3>
           <p>
-            Before studying the architecture, I mainly saw Playwright as a browser automation library.
+            At first, I mainly saw Playwright as a browser automation library.
             Now I understand that a simple test action passes through multiple layers: the test runner and
             client SDK, a persistent communication channel, the Playwright driver, a browser-specific
             automation layer and finally the browser renderer/DOM.
@@ -353,26 +351,10 @@
         </div>
       </div>
     </section>
-
-    <section id="references">
-      <div class="container">
-        <h2 class="section-title">References</h2>
-        <p class="section-sub">Sources used to understand and verify the concepts on this page.</p>
-        <div class="card refs">
-          <ol>
-            <li><a href="https://app.thetestingacademy.com/playwright/playwright-e2e-architecture-blueprint" target="_blank" rel="noopener">The Testing Academy — Playwright End-to-End Architecture Blueprint</a></li>
-            <li><a href="https://playwright.dev/docs/actionability" target="_blank" rel="noopener">Playwright Docs — Auto-waiting / Actionability</a></li>
-            <li><a href="https://playwright.dev/docs/browser-contexts" target="_blank" rel="noopener">Playwright Docs — Browser Contexts / Isolation</a></li>
-            <li><a href="https://playwright.dev/docs/api/class-browser" target="_blank" rel="noopener">Playwright Docs — Browser API</a></li>
-            <li><a href="https://playwright.dev/docs/api/class-tracing" target="_blank" rel="noopener">Playwright Docs — Tracing</a></li>
-          </ol>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer>
-    <div class="container">Research & learning page · Playwright Architecture · Built as a standalone HTML page for GitHub Pages.</div>
+    <div class="container">Playwright Architecture · Personal learning page · Built as a standalone HTML page for GitHub Pages.</div>
   </footer>
 
   <script>
